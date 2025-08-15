@@ -3,46 +3,32 @@
 import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [voice, setVoice] = useState<SpeechSynthesisVoice[]>([]);
+  const text = "Hello my name is SIddh";
   const description = `यह एक उदाहरण है जहाँ आप बटन पर क्लिक करके इस टेक्स्ट को 
   हिंदी महिला आवाज़ में सुन सकते हैं।`;
 
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
   useEffect(() => {
-    // Load voices when available
-    const loadVoices = () => {
-      const allVoices = window.speechSynthesis.getVoices();
-      setVoices(allVoices);
+    const loadVoice = () => {
+      setVoice(window.speechSynthesis.getVoices());
     };
-
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoice();
+    window.speechSynthesis.onvoiceschanged = loadVoice;
   }, []);
 
   const handleSpeak = () => {
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel();
+    const uttrance = new SpeechSynthesisUtterance(description);
+    uttrance.lang = "hi-IN";
+
+    const hindiFemale = voice.find(
+      (v) => v.lang === "hi-IN" && v.name.toLocaleLowerCase().includes("female")
+    );
+
+    if (hindiFemale) {
+      uttrance.voice = hindiFemale;
     }
 
-    const utterance = new SpeechSynthesisUtterance(description);
-
-    // Find Hindi female voice
-    const hindiFemaleVoice =
-      voices.find(
-        (v) =>
-          v.lang.toLowerCase() === "hi-in" &&
-          v.name.toLowerCase().includes("female")
-      ) || voices.find((v) => v.lang.toLowerCase() === "hi-in");
-
-    if (hindiFemaleVoice) {
-      utterance.voice = hindiFemaleVoice;
-    }
-
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(uttrance);
   };
 
   return (
